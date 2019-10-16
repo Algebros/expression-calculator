@@ -1,4 +1,18 @@
+// const operators = {
+//     '+': (x, y) => x + y,
+//     '-': (x, y) => x - y,
+//     '*': (x, y) => x * y,
+//     '/': (x, y) => {
+//         if(x == 0 || y == 0) {
+//             throw Error("TypeError: Division by zero.");
+//         }
+//         return x / y;
+//     }
+// };
+
 const priority = {
+    '(': 1,
+    // ')': 1,
     '+': 2,
     '-': 2,
     '*': 3,
@@ -46,16 +60,19 @@ function calc(expr) {
 }
 
 function reversePolishNotation(expr) {
+
     let arr = divideElements(expr);
-    let brackets = [];
-    arr.forEach(e => {
-        if(e == "(" || e == ")") {
-            brackets.push(e);
-        }        
-    });
-    if(!check(brackets)) {
-        throw Error("ExpressionError: Brackets must be paired");
-    }
+    // let brackets = [];
+    // arr.forEach(e => {
+    //     if(e == "(" || e == ")") {
+    //         brackets.push(e);
+    //     }        
+    // });
+    // console.log(brackets);
+    // console.log();
+    // if(!check(brackets, ["(", ")"])) {
+    //     throw Error("ExpressionError: Brackets must be paired");
+    // }
 
     let result = [];
     let stackSymbol = [];
@@ -100,20 +117,48 @@ function reversePolishNotation(expr) {
             result.splice(i, 1);
         }
     });
+    console.log(result);
+    console.log(stackSymbol);
     return result;
 }
 
-function whatWeDo(currentItem, lastSymbol) {    
+function check(arr, bracketsConfig) {
+    let obj = {};
+    bracketsConfig.forEach(element => {
+      obj[element[0]] = element[1];
+    });
+    
+    // let arr = str.split("");
+    let stack = [];
+    for (let i = 0; i < arr.length; i++) {
+      let lastBracket = stack[stack.length-1];
+      if(obj[lastBracket] == arr[i]) {
+        stack.pop();
+      } else {
+        stack.push(arr[i]);
+      }
+    }
+    if(stack.length == 0) return true;
+    return false;
+  }
+
+
+function whatWeDo(currentItem, lastSymbol) {
+    // console.log(`Первый символ ${currentItem}`);
+    // console.log(`Второй символ ${lastSymbol}`);
     if(!!Number(currentItem) || currentItem == "0") {
         return "first";
     } else if(currentItem == "(" || currentItem == ")") {
+        // if(currentItem == ")" && lastSymbol) {
+        //     console.log("zashel");
+        //     return "fourth";
+        // }
         if(currentItem == "(") return "second";
-        if(currentItem == ")" && priority[lastSymbol]) return "third";
-        return "fourth";        
+        if(currentItem == ")" && lastSymbol == priority[currentItem]) return "third";
     } else {
         if(priority[currentItem] == priority[lastSymbol]) return "third";
+        if(priority[currentItem] > priority[lastSymbol]) return "second";
         if(priority[currentItem] < priority[lastSymbol]) return "third";
-        if(priority[currentItem] > priority[lastSymbol]) return "second";       
         return "second";
     }
 }
@@ -143,24 +188,6 @@ function divideElements(expr) {
     });
     return arr;
 }
-
-function check(arr) {
-    let obj = {
-        "(": ")"
-    };
-    
-    let stack = [];
-    for (let i = 0; i < arr.length; i++) {
-      let lastBracket = stack[stack.length-1];
-      if(obj[lastBracket] == arr[i]) {
-        stack.pop();
-      } else {
-        stack.push(arr[i]);
-      }
-    }
-    if(stack.length == 0) return true;
-    return false;
-  }
 
 module.exports = {
     expressionCalculator

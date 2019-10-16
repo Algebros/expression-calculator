@@ -1,3 +1,15 @@
+// const operators = {
+//     '+': (x, y) => x + y,
+//     '-': (x, y) => x - y,
+//     '*': (x, y) => x * y,
+//     '/': (x, y) => {
+//         if(x == 0 || y == 0) {
+//             throw Error("TypeError: Division by zero.");
+//         }
+//         return x / y;
+//     }
+// };
+
 const priority = {
     '+': 2,
     '-': 2,
@@ -6,8 +18,19 @@ const priority = {
 };
 
 function expressionCalculator(expr) {
-    let expression = reversePolishNotation(expr);
-    return calc(expression); 
+    let divide = [];
+    divide = divideElements(expr);
+
+    // let condition = true;
+    // while (condition) {
+    let arr = check(divide, ["(", ")"]);
+    console.log(arr);
+    let polishReverse = pnr(arr[0]);
+    console.log(polishReverse);
+    let result = calc(polishReverse);
+    console.log(result);
+
+
 }
 
 function calc(expr) {
@@ -45,22 +68,12 @@ function calc(expr) {
     return expr[0];
 }
 
-function reversePolishNotation(expr) {
-    let arr = divideElements(expr);
-    let brackets = [];
-    arr.forEach(e => {
-        if(e == "(" || e == ")") {
-            brackets.push(e);
-        }        
-    });
-    if(!check(brackets)) {
-        throw Error("ExpressionError: Brackets must be paired");
-    }
-
+function pnr(arr) {
     let result = [];
     let stackSymbol = [];
 
     for (let i = 0; i < arr.length; i++) {
+        if(arr[i] == "(" || arr[i] == ")") continue;
         let currentItem = arr[i];
         let lastSymbol = stackSymbol[stackSymbol.length-1];
 
@@ -78,15 +91,6 @@ function reversePolishNotation(expr) {
                 result.push(stackSymbol.pop());
                 i--;
             break;
-
-            case "fourth":
-                stackSymbol.pop();
-            break;
-
-            case "fifth":
-                result.push(stackSymbol.pop());
-                i = i;
-            break;
         
             default:
             break;
@@ -95,27 +99,45 @@ function reversePolishNotation(expr) {
     while(stackSymbol.length != 0) {
         result.push(stackSymbol.pop());
     }
-    result.forEach((e, i) => {
-        if(e == "(" || e == ")") {
-            result.splice(i, 1);
-        }
-    });
     return result;
-}
+} 
 
-function whatWeDo(currentItem, lastSymbol) {    
+function whatWeDo(currentItem, lastSymbol) {
     if(!!Number(currentItem) || currentItem == "0") {
         return "first";
-    } else if(currentItem == "(" || currentItem == ")") {
-        if(currentItem == "(") return "second";
-        if(currentItem == ")" && priority[lastSymbol]) return "third";
-        return "fourth";        
     } else {
         if(priority[currentItem] == priority[lastSymbol]) return "third";
+        if(priority[currentItem] > priority[lastSymbol]) return "second";
         if(priority[currentItem] < priority[lastSymbol]) return "third";
-        if(priority[currentItem] > priority[lastSymbol]) return "second";       
         return "second";
     }
+}
+
+function check(arr, bracketsConfig) {
+    let obj = {};
+    bracketsConfig.forEach(element => {
+      obj[element[0]] = element[1];
+    });
+    
+    let stack = [];
+    let index = [];
+    for (let i = 0; i < arr.length; i++) {
+    //   let lastBracket = stack[stack.length-1];
+      if(arr[i] == ")") {
+        index.push(i);
+        stack.push(arr[i]);
+        break;
+      } else if(arr[i] == "(") {
+        index.push(i);
+        stack.push(arr[i]);
+      } else if(stack[0]) {
+        stack.push(arr[i]);
+      }
+    }
+    stack.push(stack.splice(stack.lastIndexOf("(")));
+    if(stack.length == 0) return false;
+    stack.push([index[index.length-2], index[index.length-1]]);
+    return stack;
 }
 
 function divideElements(expr) {
@@ -143,24 +165,6 @@ function divideElements(expr) {
     });
     return arr;
 }
-
-function check(arr) {
-    let obj = {
-        "(": ")"
-    };
-    
-    let stack = [];
-    for (let i = 0; i < arr.length; i++) {
-      let lastBracket = stack[stack.length-1];
-      if(obj[lastBracket] == arr[i]) {
-        stack.pop();
-      } else {
-        stack.push(arr[i]);
-      }
-    }
-    if(stack.length == 0) return true;
-    return false;
-  }
 
 module.exports = {
     expressionCalculator
